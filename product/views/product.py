@@ -1,9 +1,10 @@
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 
 from core.views.base import BaseViewSet
 from product.models import Product
-from product.serializers import ProductSerializer, ProductListSerializer
+from product.serializers import ProductListSerializer, ProductSerializer
 
 
 # Create your views here.
@@ -14,63 +15,41 @@ class ProductViewSet(BaseViewSet):
     filterset_fields = ["status", "product_type", "type__id"]
 
     def get_queryset(self):
-        # Add your prefetch/select optimizations
         return (
-            super()
-            .get_queryset()
-            .select_related("type")
-            .prefetch_related("categories", "tags")
+            self.filter_queryset(
+                super()
+                .get_queryset()
+                .select_related("type")
+                .prefetch_related("categories", "tags")
+            )
         )
+
+    def create(self, request):
+        try:
+            serializer = ProductSerializer(data=request.data)
+
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                data = serializer.data
+                return Response(data, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            if "already exists" in str(e):
+                return Response(
+                    {"slug": "The product with the slug already exists"},
+                    status=status.HTTP_409_CONFLICT,
+                )
 
     def list(self, request, *args, **kwargs):
-        # Get filtered queryset
-        queryset = self.get_queryset()
+        return super().list(request, *args, **kwargs)
 
-        # Apply pagination if set in settings.py
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
-        # If pagination is not enabled
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # def create(self, request, *args, **kwargs):
+    #     return super().create(request, *args, **kwargs)
 
-    def retrieve(self, request, pk):
-        product = (
-            self.get_queryset()
-            .filter(pk=pk)
-        ).first()
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
 
-        if product is None:
-            return Response(
-                {"error": "Product does nto exist"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = self.serializer_class(product)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def create(self, request, *args, **kwargs):
-        serializer = ProductSerializer(
-            data={**request.data}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def partial_update(self, request, pk, *args, **kwargs):
-        product = Product.objects.get(pk=pk)
-        serializer = ProductSerializer(
-            product,
-            data={**request.data},
-            partial=True
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, pk, *args, **kwargs):
-        product = Product.objects.get(pk=pk)
-        product.delete()
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
