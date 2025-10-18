@@ -46,6 +46,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(BaseSerializer):
     type = TypeSerializer(read_only=True)
+    categories = CategorySerializer(read_only=True, many=True)
+    tags = TagSerializer(read_only=True, many=True)
 
     class Meta:
         model = Product
