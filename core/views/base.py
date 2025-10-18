@@ -1,13 +1,12 @@
 from django.db import IntegrityError
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-
-class DjangoFilterBackend:
-    pass
+from core.utils.exception_logger import log_exception
 
 
 class BaseViewSet(ModelViewSet):
@@ -23,7 +22,7 @@ class BaseViewSet(ModelViewSet):
         try:
             return self.model.objects.all()
         except Exception as e:
-            # log_exception(e)
+            log_exception(e)
             raise APIException("Please check the view", status.HTTP_400_BAD_REQUEST)
 
     def handle_exception(self, exc):
@@ -40,3 +39,8 @@ class BaseViewSet(ModelViewSet):
                     {"error": "The payload is not valid"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            log_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
