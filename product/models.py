@@ -1,8 +1,10 @@
 from django.db import models
 
+from core.models.base import BaseModel
+
 
 # Create your models here.
-class Type(models.Model):
+class Type(BaseModel):
     name = models.CharField(max_length=20, unique=True)
     icon = models.CharField(max_length=20)
     slug = models.SlugField(max_length=20, unique=True)
