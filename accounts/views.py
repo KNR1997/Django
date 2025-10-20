@@ -1,10 +1,13 @@
 from django.contrib.auth import authenticate
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.serializers import SignupSerializer, SigninSerializer
+from core.permissions.base import ROLE
+from core.permissions.permissions import IsAdminOrReadOnly
 
 
 def get_tokens_for_user(user):
@@ -45,3 +48,20 @@ class SigninView(APIView):
 
         tokens = get_tokens_for_user(user)
         return Response({'tokens': tokens}, status=status.HTTP_200_OK)
+
+
+class CreateAdminView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        user.role = ROLE.ADMIN.value
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+        return Response(
+            {"detail": "Admin user created successfully"},
+            status=status.HTTP_201_CREATED
+        )
