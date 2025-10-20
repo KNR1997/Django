@@ -4,6 +4,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from accounts.models import User
+from core.serializers.base import BaseSerializer
 
 
 # class RegisterSerializer(serializers.ModelSerializer):
@@ -99,3 +100,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             }
         }
         return data
+
+
+class UserLiteSerializer(BaseSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'mobile_number', 'email']
