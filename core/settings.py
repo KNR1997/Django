@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'product',
+    'customer'
 ]
 
 REST_FRAMEWORK = {
@@ -56,6 +57,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'crum.CurrentRequestUserMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
