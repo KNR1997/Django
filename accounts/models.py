@@ -7,6 +7,8 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin, UserManager
 from django.db import models
 
+from core.permissions.base import ROLE
+
 
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
@@ -36,6 +38,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     is_password_autoset = models.BooleanField(default=False)
+
+    role = models.PositiveSmallIntegerField(
+        choices=[(r.value, r.name) for r in ROLE],
+        default=ROLE.GUEST.value,
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
