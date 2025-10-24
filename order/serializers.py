@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from core.serializers.base import BaseSerializer
@@ -19,11 +20,21 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items', [])
-        order = Order.objects.create(**validated_data)
 
-        # Create related order items
-        for item_data in items_data:
-            OrderItem.objects.create(order=order, **item_data)
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
+
+            for item_data in items_data:
+                product = item_data['product']
+
+                if product.quantity < item_data['quantity']:
+                    raise serializers.ValidationError(
+                        f"Not enough stock for product '{product.name}'."
+                    )
+
+                OrderItem.objects.create(order=order, **item_data)
+                product.quantity -= item_data['quantity']
+                product.save()
 
         return order
 
