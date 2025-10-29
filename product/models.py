@@ -119,3 +119,28 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CouponType(models.TextChoices):
+    FIXED = "fixed", "Fixed"
+    PERCENTAGE = "percentage", "Percentage"
+
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    language = models.CharField(max_length=20)
+    description = models.TextField(null=True)
+    type = models.CharField(max_length=20, choices=CouponType.choices, db_index=True)
+    amount = models.FloatField()
+    minimum_cart_amount = models.FloatField()
+    active_from = models.DateTimeField()
+    expire_at = models.DateTimeField()
+    is_valid = models.BooleanField(default=False)
+    # target = models.IntegerField()
+    translated_languages = models.JSONField(default=list)
+
+    class Meta:
+        db_table = "coupon"
+
+    def __str__(self):
+        return self.code

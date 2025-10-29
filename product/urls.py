@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from product.views.category import CategoryViewSet
+from product.views.coupon import CouponViewSet
 from product.views.product import ProductViewSet
 from product.views.tag import TagViewSet
 from product.views.type import TypeViewSet
@@ -16,7 +17,7 @@ urlpatterns = [
         name="type",
     ),
     path(
-        "types/<int:pk>",
+        "types/<uuid:pk>",
         TypeViewSet.as_view({
             "get": "retrieve",
             "put": "update",
@@ -69,6 +70,21 @@ urlpatterns = [
             "delete": "destroy",
         }),
         name="product",
+    ),
+    path(
+        "coupons/",
+        CouponViewSet.as_view({"get": "list", "post": "create"}),
+        name="coupon",
+    ),
+    path(
+        "coupons/<int:pk>",
+        CouponViewSet.as_view({
+            "get": "retrieve",
+            "put": "update",
+            "patch": "partial_update",
+            "delete": "destroy",
+        }),
+        name="coupon",
     )
 
 ]
