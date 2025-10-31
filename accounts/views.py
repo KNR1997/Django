@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from accounts.serializers import SignupSerializer, SigninSerializer
+from accounts.serializers import SignupSerializer, SigninSerializer, UserLiteSerializer
 from core.permissions.base import ROLE
 from core.permissions.permissions import IsAdminOrReadOnly
 
@@ -32,6 +32,9 @@ class SignupView(APIView):
 
 
 class SigninView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
         serializer = SigninSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,7 +50,12 @@ class SigninView(APIView):
             )
 
         tokens = get_tokens_for_user(user)
-        return Response({'tokens': tokens}, status=status.HTTP_200_OK)
+        return Response({
+            'tokens': tokens,
+            'permissions': ['super_admin'],
+            'role': 'super_admin'
+        }, status=status.HTTP_200_OK
+        )
 
 
 class CreateAdminView(APIView):
@@ -65,3 +73,11 @@ class CreateAdminView(APIView):
             {"detail": "Admin user created successfully"},
             status=status.HTTP_201_CREATED
         )
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserLiteSerializer(request.user)
+        return Response(serializer.data)
