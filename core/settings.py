@@ -27,8 +27,15 @@ SECRET_KEY = 'django-insecure-#=-l54^emz$-zzlkdy9i68h7!mxrgqb2p9w6*^$%gp8oi62@as
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3002",
+    "http://localhost:3006",
+    "https://pickbazar-admin-steel.vercel.app"
+]
 
 # Application definition
 
@@ -39,10 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 
     'rest_framework',
     'django_filters',
-    'corsheaders',
 
     'accounts',
     'product',
@@ -55,6 +62,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.LaravelLikePagination',
+    'PAGE_SIZE': 10,  # or whatever default you prefer
 }
 
 MIDDLEWARE = [
@@ -142,9 +152,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 🚧 DEVELOPMENT ONLY — DON'T USE IN PRODUCTION!
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3002",
+#     "http://localhost:3006",
+#     "https://pickbazar-admin-steel.vercel.app"
+# ]
 
-ALLOWED_HOSTS = ['*']
-CORS_ALLOW_CREDENTIALS = True
+# ALLOWED_HOSTS = ['*']
+# CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL="accounts.User"
